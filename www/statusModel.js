@@ -49,7 +49,6 @@ $(document).ready( function()
 
     socket.on("heartbeat", function(heartbeat) 
     {
-        console.log("HELLLLOOO FROM STATUS MODEL JS -- RECEIVING HEARTBEAT");
         console.log(JSON.stringify(heartbeat));
         table.clients = heartbeat;
         statusBars.clients = heartbeat;

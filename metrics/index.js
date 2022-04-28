@@ -42,7 +42,6 @@ function start(app)
 			//// Broadcast heartbeat event over websockets ever 1 second
 			var heartbeatTimer = setInterval( function () 
 			{
-				console.log("HELLLLOOO FROM INDEX JS -- SENDING HEARTBEAT");
 				socket.emit("heartbeat", servers);
 			}, 1000);
 
@@ -96,6 +95,7 @@ function start(app)
 					server.path = "";
 				}
 				server.url = `http://${server.ip}:${server.port}/${server.path}`;
+				console.log(`Trying to reach ${server.url}`);
 				let now = Date.now();
 
 				// Bind a new variable in order to for it to be properly captured inside closure.
