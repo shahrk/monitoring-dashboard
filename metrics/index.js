@@ -42,6 +42,7 @@ function start(app)
 			//// Broadcast heartbeat event over websockets ever 1 second
 			var heartbeatTimer = setInterval( function () 
 			{
+				console.log("HELLLLOOO FROM INDEX JS -- SENDING HEARTBEAT");
 				socket.emit("heartbeat", servers);
 			}, 1000);
 
@@ -107,13 +108,11 @@ function start(app)
 					// TASK 2
 					captureServer.statusCode = res.statusCode;
 					captureServer.latency = performance.now() - start;
-					updateHealth(captureServer);
 				}).catch( e => 
 				{
 					// console.log(e);
 					captureServer.statusCode = e.code;
 					captureServer.latency = 5000;
-					updateHealth(captureServer);
 				});
 			}
 		}
