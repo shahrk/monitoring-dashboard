@@ -7,24 +7,23 @@ const {performance} = require('perf_hooks');
 const { cp } = require('fs/promises');
 
 // We need your host computer ip address in order to use port forwards to servers.
-let ip = ''
+let serverConfig;
 try
 {
-	ip = fs.readFileSync(path.join(__dirname,'ip.txt')).toString();
+	serverConfig = require('/root/servers.json');
 }
 catch(e)
 {
 	console.log(e);
-	throw new Error("Missing required ip.txt file");	
+	throw new Error("Missing required /root/servers.json file");	
 }
 
 /// Servers data being monitored.
-var servers = 
-[
-	{name: "blue",ip: "", port: 8080, path: "iTrust2", status: "#cccccc",  scoreTrend : [0]},
-	{name: "green",ip: "", port: 8080, path: "iTrust2", status: "#cccccc",  scoreTrend : [0]}
-];
-
+var servers = [];
+for (let server in serverConfig) {
+	if (server !== 'monitor')
+		servers.push({name: server, ip: serverConfig[server].ip, port: serverConfig[server].port, path: serverConfig[server].path, status: "#cccccc", scoreTrend: [0]})
+}
 
 function start(app)
 {
