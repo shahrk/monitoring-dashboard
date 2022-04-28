@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<!--    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-debug.js"></script>
+  -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.6/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.js"></script>
+    <script type="text/javascript" src="statusModel.js"></script>
+    <style type="text/css" >
+    .foo {   
+    float: left;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgba(0,0,0,.2);
+}
+    </style>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.6/css/jquery.dataTables.css">
+
+    <script src=//unpkg.com/vue@2.6.14></script>
+    <script src=//unpkg.com/vuetrend></script>
+    
+
+  </head>
+  <body>
+
+
+      <h1>Monitor Dashboard</h1>
+
+      <h3>Servers</h3>
+
+      <div id="statusColors" :key="componentKey">
+        <div v-for="client in clients">
+          <span class="foo" v-bind:style="{backgroundColor: client.status}"></span>
+        </div>
+      </div>
+      <br/>
+
+      <h3>Metrics</h3>
+
+        <table id="statusTable"  class="display" cellspacing="0" width="90%">
+          <thead>
+              <tr>
+                  <th>Name</th>
+                  <th>CPU %</th>
+                  <th>Memory %</th>
+                  <th>Latency (ms)</th>
+                  <th>HTTP</th>
+                  <th>Trend</th>
+              </tr>
+          </thead>
+              <tbody > 
+                <tr v-for="client in clients">
+                <td>{{client.name}}</td>
+                <td>{{client.cpu}}</td>
+                <td>{{client.memoryLoad}}</td>
+                <td>{{client.latency}}</td>
+                <td>{{client.statusCode}}</td>
+                <td>
+                  <div>
+                    <trend
+                      :key="client.name"
+                      :data="client.scoreTrend"
+                      :stroke-width="4"
+                      :gradient="['#ff0000', '#00ff00']">
+                    </trend>
+                  </div>
+                </td>
+              </tr>
+          </tbody>
+      </table>
+
+  </body>
+</html>
