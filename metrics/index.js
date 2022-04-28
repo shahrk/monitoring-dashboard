@@ -76,7 +76,7 @@ function start(app)
 				let payload = JSON.parse(message);
 				server.memoryLoad = payload.memoryLoad;
 				server.cpu = payload.cpu;
-				// updateHealth(server);
+				updateHealth(server);
 			}
 		}
 	});
