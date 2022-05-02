@@ -37,7 +37,7 @@ const accessToken = oauth2Client.getAccessToken();
 // 	}
 // });
 // const transporter = nodemailer.createTransport({
-// 	service: gmail,
+// 	service: 'gmail',
 // 	pool: true,
 // 	auth: {
 //     user: process.env.G_EMAIL,
@@ -48,7 +48,7 @@ const accessToken = oauth2Client.getAccessToken();
 // 	}
 // });
 const transporter = nodemailer.createTransport({
-	service: gmail,
+	service: 'gmail',
 	pool: true,
 	auth: {
     user: process.env.G_EMAIL,
