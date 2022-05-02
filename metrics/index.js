@@ -19,6 +19,23 @@ const oauth2Client = new OAuth2(
 oauth2Client.setCredentials({
 	refresh_token: process.env.G_REFRESH_TOKEN
 });
+const accessToken = oauth2Client.getAccessToken();
+const transporter = nodemailer.createTransport({
+	host: "smtp.gmail.com",
+	port: 465,
+	pool: true,
+	auth: {
+		type: "OAuth2",
+		user: 'ncsudevops24@gmail.com',
+		clientId: process.env.G_CLIENT_ID,
+		clientSecret: process.env.G_CLIENT_SECRET,
+		refreshToken: process.env.G_REFRESH_TOKEN,
+		accessToken: accessToken
+	},
+	tls: {
+		rejectUnauthorized: false
+	}
+});
 
 // We need your host computer ip address in order to use port forwards to servers.
 let serverConfig;
@@ -89,23 +106,6 @@ function start(app) {
 				if ((cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
 					console.log("LOOOOOOOOOOOOOOOK");
 					console.log(cpu_threshold, server.cpu, memory_threshold, server.memoryLoad);
-					const accessToken = oauth2Client.getAccessToken();
-					const transporter = nodemailer.createTransport({
-						host: "smtp.gmail.com",
-						port: 465,
-						auth: {
-							type: "OAuth2",
-							user: 'ncsudevops24@gmail.com',
-							clientId: process.env.G_CLIENT_ID,
-							clientSecret: process.env.G_CLIENT_SECRET,
-							refreshToken: process.env.G_REFRESH_TOKEN,
-							accessToken: accessToken
-						},
-						tls: {
-							rejectUnauthorized: false
-						}
-					});
-					console.log(server.cpu, cpu_threshold, server.memoryLoad, memory_threshold);
 					let mailOptions = {
 						from: 'ncsudevops24@gmail.com',
 						to: email,
