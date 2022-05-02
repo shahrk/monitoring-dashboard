@@ -102,7 +102,7 @@ function start(app) {
 					// 		rejectUnauthorized: false
 					// 	}
 					// });
-					const transporter = nodemailer.createTransport("SMTP", {
+					const transporter = nodemailer.createTransport({
 						service: "Gmail",
 						auth: {
 							user: process.env.G_EMAIL,
