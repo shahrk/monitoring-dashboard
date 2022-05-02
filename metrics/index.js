@@ -7,11 +7,10 @@ const path = require('path');
 const { performance } = require('perf_hooks');
 const { cp } = require('fs/promises');
 const { promisify } = require('util');
-const sendgrid = require('@sendgrid/mail');
+const { CourierClient } = require("@trycourier/courier");
 require('dotenv').config()
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
-sendgrid.setApiKey(SENDGRID_API_KEY)
+const courier = CourierClient({ authorizationToken: process.env.COURIER_AUTH_TOKEN });
 
 // We need your host computer ip address in order to use port forwards to servers.
 let serverConfig;
@@ -74,7 +73,7 @@ function start(app) {
 		const cpu_threshold = await getAsync('alert_cpu_threshold');
 		const memory_threshold = await getAsync('alert_memory_threshold');
 		const email = await getAsync('alert_email');
-		const last_sent = await getAsync('alert_last_sent'); 
+		const last_sent = await getAsync('alert_last_sent');
 		for (var server of servers) {
 			// Update our current snapshot for a server's metrics.
 			if (server.name == channel) {
@@ -88,26 +87,26 @@ function start(app) {
 				}
 				if ((time_elapsed >= 600000 && cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
 					console.log("LOOOOOOOOOOOOOOOK");
-					let metric = "memory";
+					let metric = "Memory";
 					if (server.cup > cpu_threshold) {
-						metric = "cpu";
+						metric = "CPU";
 					}
-					const msg = {
-						to: email,
-						from: 'ncsudevops24@gmail.com',
-						subject: `Alert: ${metric} usage has exceeded threshold on server ${server.name}`,
-						text: `server: ${server.ip}\ncpu usage: ${server.cpu}\nmemory usage: ${server.memoryLoad}`,
-						html: '<strong>and easy to do anywhere, even with Node.js</strong>',
-					}
-					sendgrid
-						.send(msg)
-						.then((resp) => {
-							console.log('Email sent\n', resp)
-						})
-						.catch((error) => {
-							console.error(error)
-						})
-						await setAsync('alert_last_sent',Date.now()); 
+					const { requestId } = await courier.send({
+						message: {
+							to: {
+								email: email,
+							},
+							template: "MDQK6J5J6A4YTHJYHXA963BMQTQ5",
+							data: {
+								server: server.ip,
+								cpu: server.cpu,
+								memory: server.memoryLoad,
+								metric: metric,
+							},
+						},
+					});
+					console.log(`Email Sent - ${requestId}`);
+					await setAsync('alert_last_sent', Date.now());
 				}
 				updateHealth(server);
 			}
