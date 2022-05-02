@@ -20,21 +20,40 @@ oauth2Client.setCredentials({
 	refresh_token: process.env.G_REFRESH_TOKEN
 });
 const accessToken = oauth2Client.getAccessToken();
+// const transporter = nodemailer.createTransport({
+// 	host: "smtp.gmail.com",
+// 	port: 465,
+// 	pool: true,
+// 	auth: {
+// 		type: "OAuth2",
+// 		user: 'ncsudevops24@gmail.com',
+// 		clientId: process.env.G_CLIENT_ID,
+// 		clientSecret: process.env.G_CLIENT_SECRET,
+// 		refreshToken: process.env.G_REFRESH_TOKEN,
+// 		accessToken: accessToken
+// 	},
+// 	tls: {
+// 		rejectUnauthorized: false
+// 	}
+// });
+// const transporter = nodemailer.createTransport({
+// 	service: gmail,
+// 	pool: true,
+// 	auth: {
+//     user: process.env.G_EMAIL,
+//     pass: process.env.G_PASS
+//   },
+// 	tls: {
+// 		rejectUnauthorized: false
+// 	}
+// });
 const transporter = nodemailer.createTransport({
-	host: "smtp.gmail.com",
-	port: 465,
+	service: gmail,
 	pool: true,
 	auth: {
-		type: "OAuth2",
-		user: 'ncsudevops24@gmail.com',
-		clientId: process.env.G_CLIENT_ID,
-		clientSecret: process.env.G_CLIENT_SECRET,
-		refreshToken: process.env.G_REFRESH_TOKEN,
-		accessToken: accessToken
-	},
-	tls: {
-		rejectUnauthorized: false
-	}
+    user: process.env.G_EMAIL,
+    pass: process.env.G_PASS
+  }
 });
 
 // We need your host computer ip address in order to use port forwards to servers.
