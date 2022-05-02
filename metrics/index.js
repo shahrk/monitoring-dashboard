@@ -5,6 +5,15 @@ const fs = require('fs');
 const path = require('path');
 const {performance} = require('perf_hooks');
 const { cp } = require('fs/promises');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'ncsudevops24@gmail.com',
+    pass: 'TempPass@2022'
+  }
+});
 
 // We need your host computer ip address in order to use port forwards to servers.
 let serverConfig;
@@ -68,6 +77,9 @@ function start(app)
 	client.on("message", function (channel, message) 
 	{
 		console.log(`Received message from agent: ${channel}`)
+		const cpu_threshold = await client.get('alert_cpu_threshold');
+		const memory_threshold = await client.get('alert_memory_threshold');
+		const email = await client.get('alert_email');
 		for( var server of servers )
 		{
 			// Update our current snapshot for a server's metrics.
@@ -76,6 +88,21 @@ function start(app)
 				let payload = JSON.parse(message);
 				server.memoryLoad = payload.memoryLoad;
 				server.cpu = payload.cpu;
+				if ((cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
+					let mailOptions = {
+						from: 'alerts@devops.com',
+						to: email,
+						subject: `Alert: Server Metric exceeded threshold`,
+						text: `Server CPU usage: ${server.cpu}%\nServer Memory usage: ${server.memoryLoad}%`
+					};
+					transporter.sendMail(mailOptions, function(error, info){
+						if (error) {
+							console.log(error);
+						} else {
+							console.log('Email sent: ' + info.response);
+						}
+					});
+				}
 				updateHealth(server);
 			}
 		}

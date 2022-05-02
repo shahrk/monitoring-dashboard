@@ -12,6 +12,7 @@
     "express": "^4.17.1",
     "got": "^10.7.0",
     "http-errors": "^1.7.3",
+    "nodemailer": "^6.7.4",
     "redis": "^3.0.2",
     "socket.io": "^2.3.0"
   }
