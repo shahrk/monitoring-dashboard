@@ -20,25 +20,8 @@ oauth2Client.setCredentials({
 	refresh_token: process.env.G_REFRESH_TOKEN
 });
 const accessToken = oauth2Client.getAccessToken();
-// const transporter = nodemailer.createTransport({
-// 	service: 'gmail',
-// 	pool: true,
-// 	auth: {
-// 		type: "OAuth2",
-// 		user: 'ncsudevops24@gmail.com',
-// 		clientId: process.env.G_CLIENT_ID,
-// 		clientSecret: process.env.G_CLIENT_SECRET,
-// 		refreshToken: process.env.G_REFRESH_TOKEN,
-// 		accessToken: accessToken
-// 	},
-// 	tls: {
-// 		rejectUnauthorized: false
-// 	}
-// });
 const transporter = nodemailer.createTransport({
-	host: "smtp.gmail.com",
-	port: 587,
-	pool: true,
+	service: 'Gmail',
 	auth: {
 		type: "OAuth2",
 		user: 'ncsudevops24@gmail.com',
@@ -46,9 +29,6 @@ const transporter = nodemailer.createTransport({
 		clientSecret: process.env.G_CLIENT_SECRET,
 		refreshToken: process.env.G_REFRESH_TOKEN,
 		accessToken: accessToken
-	},
-	tls: {
-		rejectUnauthorized: false
 	}
 });
 // const transporter = nodemailer.createTransport({
