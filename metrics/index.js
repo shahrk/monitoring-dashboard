@@ -83,7 +83,7 @@ function start(app) {
 				server.cpu = payload.cpu;
 				let time_elapsed = ALERT_TIMEOUT;
 				if (last_sent) {
-					console.log(`LAST ALERT SENT AT: ${last_sent}`);
+					console.log(`LAST ALERT SENT AT: ${new Date(last_sent).toTimeString()}`);
 					time_elapsed = Date.now() - last_sent;
 				}
 				if ((time_elapsed >= ALERT_TIMEOUT && cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
