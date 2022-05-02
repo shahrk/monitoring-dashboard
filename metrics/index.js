@@ -89,7 +89,7 @@ function start(app) {
 				if ((time_elapsed >= ALERT_TIMEOUT && cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
 					console.log("LOOOOOOOOOOOOOOOK");
 					let metric = "Memory";
-					if (server.cup > cpu_threshold) {
+					if (server.cpu > cpu_threshold) {
 						metric = "CPU";
 					}
 					const { requestId } = await courier.send({
