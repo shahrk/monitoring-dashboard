@@ -36,25 +36,25 @@ const accessToken = oauth2Client.getAccessToken();
 // 		rejectUnauthorized: false
 // 	}
 // });
-// const transporter = nodemailer.createTransport({
-// 	service: 'gmail',
-// 	pool: true,
-// 	auth: {
-//     user: process.env.G_EMAIL,
-//     pass: process.env.G_PASS
-//   },
-// 	tls: {
-// 		rejectUnauthorized: false
-// 	}
-// });
 const transporter = nodemailer.createTransport({
 	service: 'gmail',
 	pool: true,
 	auth: {
     user: process.env.G_EMAIL,
     pass: process.env.G_PASS
-  }
+  },
+	tls: {
+		rejectUnauthorized: false
+	}
 });
+// const transporter = nodemailer.createTransport({
+// 	service: 'gmail',
+// 	pool: true,
+// 	auth: {
+//     user: process.env.G_EMAIL,
+//     pass: process.env.G_PASS
+//   }
+// });
 
 // We need your host computer ip address in order to use port forwards to servers.
 let serverConfig;
