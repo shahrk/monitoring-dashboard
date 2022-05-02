@@ -1,62 +1,31 @@
 // websocket server that dashboard connects to.
+const axios = require('axios');
 const redis = require('redis');
 const got = require('got');
 const fs = require('fs');
 const path = require('path');
 const { performance } = require('perf_hooks');
 const { cp } = require('fs/promises');
-const nodemailer = require('nodemailer');
-const { google } = require("googleapis");
 const { promisify } = require('util');
-const OAuth2 = google.auth.OAuth2;
 require('dotenv').config()
 
-const oauth2Client = new OAuth2(
-	process.env.G_CLIENT_ID, // ClientID
-	process.env.G_CLIENT_SECRET, // Client Secret
-	"https://developers.google.com/oauthplayground" // Redirect URL
-);
-oauth2Client.setCredentials({
-	refresh_token: process.env.G_REFRESH_TOKEN
-});
-const accessToken = oauth2Client.getAccessToken();
-// const transporter = nodemailer.createTransport({
-// 	service: 'Gmail',
-// 	auth: {
-// 		type: "OAuth2",
-// 		user: 'ncsudevops24@gmail.com',
-// 		clientId: process.env.G_CLIENT_ID,
-// 		clientSecret: process.env.G_CLIENT_SECRET,
-// 		refreshToken: process.env.G_REFRESH_TOKEN,
-// 		accessToken: accessToken
-// 	}
-// });
-const transporter = nodemailer.createTransport({
-	service: 'Gmail',
-	auth: {
-		user: 'ncsudevops24@gmail.com',
-		pass: 'TempPass@2022'
+const headers =
+{
+	'Content-Type': 'application/json'
+};
+const data = {
+	service_id: process.env.EJS_SERVICE_ID,
+	template_id: process.env.EJS_TEMPLATE_ID,
+	user_id: process.env.EJS_USER_ID,
+	accessToken: process.env.EJS_ACCESS_TOKEN,
+	template_params: {
+		'metric': 'cpu',
+		'server': 'blue',
+		'cpu': 0,
+		'memory': 0,
+		'to': 'ncsudevops24@gmail.com'
 	}
-});
-// const transporter = nodemailer.createTransport({
-// 	service: 'gmail',
-// 	pool: true,
-// 	auth: {
-//     user: process.env.G_EMAIL,
-//     pass: process.env.G_PASS
-//   },
-// 	tls: {
-// 		rejectUnauthorized: false
-// 	}
-// });
-// const transporter = nodemailer.createTransport({
-// 	service: 'gmail',
-// 	pool: true,
-// 	auth: {
-//     user: process.env.G_EMAIL,
-//     pass: process.env.G_PASS
-//   }
-// });
+};
 
 // We need your host computer ip address in order to use port forwards to servers.
 let serverConfig;
@@ -126,20 +95,22 @@ function start(app) {
 				server.cpu = payload.cpu;
 				if ((cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
 					console.log("LOOOOOOOOOOOOOOOK");
-					console.log(cpu_threshold, server.cpu, memory_threshold, server.memoryLoad);
-					let mailOptions = {
-						from: 'ncsudevops24@gmail.com',
-						to: email,
-						subject: `Alert: Server Metric exceeded threshold`,
-						text: `Server CPU usage: ${server.cpu}%\nServer Memory usage: ${server.memoryLoad}%`
-					};
-					transporter.sendMail(mailOptions, function (error, info) {
-						if (error) {
-							console.log(error);
-						} else {
-							console.log('Email sent: ' + info.response);
-						}
-					});
+					if (server.cpu > cpu_threshold)
+						data.template_params.metric = 'cpu';
+					else
+						data.template_params.metric = 'memory';
+					data.template_params.server = server.name;
+					data.template_params.cpu = server.cpu;
+					data.template_params.memory = server.memoryLoad;
+					data.template_params.to = email;
+					let response = await axios.post("https://api.emailjs.com/api/v1.0/email/send",
+						data,
+						{
+							headers: headers,
+						}).catch(err =>
+							console.error(chalk.red(`EmailJS send: ${err}`))
+						);
+					console.log(response);
 				}
 				updateHealth(server);
 			}
