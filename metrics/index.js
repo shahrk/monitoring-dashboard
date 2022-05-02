@@ -75,9 +75,10 @@ function start(app) {
 	// When an agent has published information to a channel, we will receive notification here.
 	client.on("message", async function (channel, message) {
 		console.log(`Received message from agent: ${channel}`)
-		const cpu_threshold = await client_kv.getAsync('alert_cpu_threshold');
-		const memory_threshold = await client_kv.getAsync('alert_memory_threshold');
-		const email = await client_kv.getAsync('alert_email');
+		const getAsync = promisify(client.get).bind(client);
+		const cpu_threshold = await getAsync('alert_cpu_threshold');
+		const memory_threshold = await getAsync('alert_memory_threshold');
+		const email = await getAsync('alert_email');
 		for (var server of servers) {
 			// Update our current snapshot for a server's metrics.
 			if (server.name == channel) {
@@ -85,7 +86,7 @@ function start(app) {
 				server.memoryLoad = payload.memoryLoad;
 				server.cpu = payload.cpu;
 				if ((cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
-					console.log("LLOOOOJJJJKKKK");
+					console.log("LOOOOOOOOOOOOOOOK");
 					console.log(cpu_threshold, server.cpu, memory_threshold, server.memoryLoad);
 					const accessToken = oauth2Client.getAccessToken();
 					const transporter = nodemailer.createTransport({
