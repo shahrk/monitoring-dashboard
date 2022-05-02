@@ -10,14 +10,14 @@ const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 require('dotenv').config()
 
-const oauth2Client = new OAuth2(
-	process.env.G_CLIENT_ID, // ClientID
-	process.env.G_CLIENT_SECRET, // Client Secret
-	"https://developers.google.com/oauthplayground" // Redirect URL
-);
-oauth2Client.setCredentials({
-	refresh_token: process.env.G_REFRESH_TOKEN
-});
+// const oauth2Client = new OAuth2(
+// 	process.env.G_CLIENT_ID, // ClientID
+// 	process.env.G_CLIENT_SECRET, // Client Secret
+// 	"https://developers.google.com/oauthplayground" // Redirect URL
+// );
+// oauth2Client.setCredentials({
+// 	refresh_token: process.env.G_REFRESH_TOKEN
+// });
 
 // We need your host computer ip address in order to use port forwards to servers.
 let serverConfig;
@@ -79,29 +79,37 @@ function start(app) {
 		const cpu_threshold = await client_kv.get('alert_cpu_threshold');
 		const memory_threshold = await client_kv.get('alert_memory_threshold');
 		const email = await client_kv.get('alert_email');
+		console.log(cpu_threshold, memory_threshold, email);
 		for (var server of servers) {
 			// Update our current snapshot for a server's metrics.
 			if (server.name == channel) {
 				let payload = JSON.parse(message);
 				server.memoryLoad = payload.memoryLoad;
 				server.cpu = payload.cpu;
-				if ((cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
-					const accessToken = oauth2Client.getAccessToken()
-					const transporter = nodemailer.createTransport({
-						service: 'gmail',
+				if (email && ((cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold))) {
+					// const accessToken = oauth2Client.getAccessToken()
+					// const transporter = nodemailer.createTransport({
+					// 	service: 'gmail',
+					// 	auth: {
+					// 		type: "OAuth2",
+					// 		user: 'ncsudevops24@gmail.com',
+					// 		clientId: process.env.G_CLIENT_ID,
+					// 		clientSecret: process.env.G_CLIENT_SECRET,
+					// 		refreshToken: process.env.G_REFRESH_TOKEN,
+					// 		accessToken: accessToken
+					// 	},
+					// 	tls: {
+					// 		rejectUnauthorized: false
+					// 	}
+					// });
+					const transporter = nodemailer.createTransport("SMTP", {
+						service: "Gmail",
 						auth: {
-							type: "OAuth2",
-							user: 'ncsudevops24@gmail.com',
-							clientId: process.env.G_CLIENT_ID,
-							clientSecret: process.env.G_CLIENT_SECRET,
-							refreshToken: process.env.G_REFRESH_TOKEN,
-							accessToken: accessToken
-						},
-						tls: {
-							rejectUnauthorized: false
+							user: process.env.G_EMAIL,
+							pass: process.env.G_PASS
 						}
 					});
-					console.log(server.cpu, cpu_threshold, server.memoryLoad, memory_threshold);
+					// console.log(server.cpu, cpu_threshold, server.memoryLoad, memory_threshold);
 					let mailOptions = {
 						from: 'ncsudevops24@gmail.com',
 						to: email,
