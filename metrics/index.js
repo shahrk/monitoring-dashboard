@@ -76,7 +76,7 @@ function start(app) {
 	// When an agent has published information to a channel, we will receive notification here.
 	client.on("message", async function (channel, message) {
 		console.log(`Received message from agent: ${channel}`)
-		const getAsync = promisify(client.get).bind(client);
+		const getAsync = promisify(client_kv.get).bind(client_kv);
 		const cpu_threshold = await getAsync('alert_cpu_threshold');
 		const memory_threshold = await getAsync('alert_memory_threshold');
 		const email = await getAsync('alert_email');
