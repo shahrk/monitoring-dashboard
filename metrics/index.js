@@ -75,10 +75,9 @@ function start(app) {
 	// When an agent has published information to a channel, we will receive notification here.
 	client.on("message", async function (channel, message) {
 		console.log(`Received message from agent: ${channel}`)
-		await client_kv.connect();
-		const cpu_threshold = await client_kv.get('alert_cpu_threshold');
-		const memory_threshold = await client_kv.get('alert_memory_threshold');
-		const email = await client_kv.get('alert_email');
+		const cpu_threshold = await client_kv.getAsync('alert_cpu_threshold');
+		const memory_threshold = await client_kv.getAsync('alert_memory_threshold');
+		const email = await client_kv.getAsync('alert_email');
 		for (var server of servers) {
 			// Update our current snapshot for a server's metrics.
 			if (server.name == channel) {
