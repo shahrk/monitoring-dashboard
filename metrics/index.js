@@ -103,6 +103,7 @@ function start(app) {
 					data.template_params.cpu = server.cpu;
 					data.template_params.memory = server.memoryLoad;
 					data.template_params.to = email;
+					console.log(data);
 					let response = await axios.post("https://api.emailjs.com/api/v1.0/email/send",
 						data,
 						{
