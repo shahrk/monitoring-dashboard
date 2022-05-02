@@ -108,7 +108,7 @@ function start(app) {
 						{
 							headers: headers,
 						}).catch(err =>
-							console.error(chalk.red(`EmailJS send: ${err}`))
+							console.error(`EmailJS sent: ${err}`)
 						);
 					console.log(response);
 				}
