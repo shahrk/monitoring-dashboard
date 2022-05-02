@@ -74,7 +74,7 @@ function start(app)
 	}
 
 	// When an agent has published information to a channel, we will receive notification here.
-	client.on("message", function (channel, message) 
+	client.on("message", async function (channel, message) 
 	{
 		console.log(`Received message from agent: ${channel}`)
 		const cpu_threshold = await client.get('alert_cpu_threshold');
