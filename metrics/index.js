@@ -7,25 +7,11 @@ const path = require('path');
 const { performance } = require('perf_hooks');
 const { cp } = require('fs/promises');
 const { promisify } = require('util');
+const sendgrid = require('@sendgrid/mail');
 require('dotenv').config()
 
-const headers =
-{
-	'Content-Type': 'application/json'
-};
-const data = {
-	service_id: process.env.EJS_SERVICE_ID,
-	template_id: process.env.EJS_TEMPLATE_ID,
-	user_id: process.env.EJS_USER_ID,
-	accessToken: process.env.EJS_ACCESS_TOKEN,
-	template_params: {
-		'metric': 'cpu',
-		'server': 'blue',
-		'cpu': 0,
-		'memory': 0,
-		'to': 'ncsudevops24@gmail.com'
-	}
-};
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
+sendgrid.setApiKey(SENDGRID_API_KEY)
 
 // We need your host computer ip address in order to use port forwards to servers.
 let serverConfig;
@@ -74,6 +60,8 @@ function start(app) {
 	/////////////////////////////////////////////////////////////////////////////////////////
 	let client = redis.createClient(6379, 'localhost', {});
 	let client_kv = redis.createClient(6379, 'localhost', {});
+	const getAsync = promisify(client_kv.get).bind(client_kv);
+	const setAsync = promisify(client_kv.set).bind(client_kv);
 	// We subscribe to all the data being published by the server's metric agent.
 	for (var server of servers) {
 		// The name of the server is the name of the channel to recent published events on redis.
@@ -83,35 +71,43 @@ function start(app) {
 	// When an agent has published information to a channel, we will receive notification here.
 	client.on("message", async function (channel, message) {
 		console.log(`Received message from agent: ${channel}`)
-		const getAsync = promisify(client_kv.get).bind(client_kv);
 		const cpu_threshold = await getAsync('alert_cpu_threshold');
 		const memory_threshold = await getAsync('alert_memory_threshold');
 		const email = await getAsync('alert_email');
+		const last_sent = await getAsync('alert_last_sent'); 
 		for (var server of servers) {
 			// Update our current snapshot for a server's metrics.
 			if (server.name == channel) {
 				let payload = JSON.parse(message);
 				server.memoryLoad = payload.memoryLoad;
 				server.cpu = payload.cpu;
-				if ((cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
+				let time_elapsed = 600000;
+				if (last_sent) {
+					console.log(`LAST ALERT SENT AT: ${last_sent}`);
+					time_elapsed = Date.now() - last_sent;
+				}
+				if ((time_elapsed >= 600000 && cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
 					console.log("LOOOOOOOOOOOOOOOK");
-					if (server.cpu > cpu_threshold)
-						data.template_params.metric = 'cpu';
-					else
-						data.template_params.metric = 'memory';
-					data.template_params.server = server.name;
-					data.template_params.cpu = server.cpu;
-					data.template_params.memory = server.memoryLoad;
-					data.template_params.to = email;
-					console.log(data);
-					let response = await axios.post("https://api.emailjs.com/api/v1.0/email/send",
-						data,
-						{
-							headers: headers,
-						}).catch(err =>
-							console.error(`EmailJS sent: ${err}`)
-						);
-					console.log(response);
+					let metric = "memory";
+					if (server.cup > cpu_threshold) {
+						metric = "cpu";
+					}
+					const msg = {
+						to: email,
+						from: 'ncsudevops24@gmail.com',
+						subject: `Alert: ${metric} usage has exceeded threshold on server ${server.name}`,
+						text: `server: ${server.ip}\ncpu usage: ${server.cpu}\nmemory usage: ${server.memoryLoad}`,
+						html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+					}
+					sendgrid
+						.send(msg)
+						.then((resp) => {
+							console.log('Email sent\n', resp)
+						})
+						.catch((error) => {
+							console.error(error)
+						})
+						await setAsync('alert_last_sent',Date.now()); 
 				}
 				updateHealth(server);
 			}
