@@ -9,6 +9,7 @@ const { cp } = require('fs/promises');
 const { promisify } = require('util');
 const { CourierClient } = require("@trycourier/courier");
 require('dotenv').config()
+const ALERT_TIMEOUT = 60000;
 
 const courier = CourierClient({ authorizationToken: process.env.COURIER_AUTH_TOKEN });
 
@@ -80,12 +81,12 @@ function start(app) {
 				let payload = JSON.parse(message);
 				server.memoryLoad = payload.memoryLoad;
 				server.cpu = payload.cpu;
-				let time_elapsed = 600000;
+				let time_elapsed = ALERT_TIMEOUT;
 				if (last_sent) {
 					console.log(`LAST ALERT SENT AT: ${last_sent}`);
 					time_elapsed = Date.now() - last_sent;
 				}
-				if ((time_elapsed >= 600000 && cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
+				if ((time_elapsed >= ALERT_TIMEOUT && cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
 					console.log("LOOOOOOOOOOOOOOOK");
 					let metric = "Memory";
 					if (server.cup > cpu_threshold) {
@@ -96,12 +97,12 @@ function start(app) {
 							to: {
 								email: email,
 							},
-							template: "MDQK6J5J6A4YTHJYHXA963BMQTQ5",
+							template: "8J1VFH5B9XMTKKPQGTTB4EZ2WFKK",
 							data: {
+								metric: metric,
 								server: server.ip,
 								cpu: server.cpu,
 								memory: server.memoryLoad,
-								metric: metric,
 							},
 						},
 					});
