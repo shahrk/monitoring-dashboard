@@ -6,13 +6,32 @@ const path = require('path');
 const {performance} = require('perf_hooks');
 const { cp } = require('fs/promises');
 const nodemailer = require('nodemailer');
+const { google } = require("googleapis");
+const OAuth2 = google.auth.OAuth2;
+require('dotenv').config()
 
+const oauth2Client = new OAuth2(
+	process.env.G_CLIENT_ID, // ClientID
+	process.env.G_CLIENT_SECRET, // Client Secret
+	"https://developers.google.com/oauthplayground" // Redirect URL
+);
+oauth2Client.setCredentials({
+	refresh_token: process.env.G_REFRESH_TOKEN
+});
+const accessToken = oauth2Client.getAccessToken()
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  auth: {
-    user: 'ncsudevops24@gmail.com',
-    pass: 'TempPass@2022'
-  }
+	auth: {
+		type: "OAuth2",
+		user: 'ncsudevops24@gmail.com',
+		clientId: process.env.G_CLIENT_ID,
+		clientSecret: process.env.G_CLIENT_SECRET,
+		refreshToken:  process.env.G_REFRESH_TOKEN,
+		accessToken: accessToken
+	},
+	tls: {
+		rejectUnauthorized: false
+	}
 });
 
 // We need your host computer ip address in order to use port forwards to servers.
@@ -90,8 +109,9 @@ function start(app)
 				server.memoryLoad = payload.memoryLoad;
 				server.cpu = payload.cpu;
 				if ((cpu_threshold && server.cpu > cpu_threshold) || (memory_threshold && server.memoryLoad > memory_threshold)) {
+					console.log(server.cpu, cpu_threshold, server.memoryLoad, memory_threshold);
 					let mailOptions = {
-						from: 'alerts@devops.com',
+						from: 'ncsudevops24@gmail.com',
 						to: email,
 						subject: `Alert: Server Metric exceeded threshold`,
 						text: `Server CPU usage: ${server.cpu}%\nServer Memory usage: ${server.memoryLoad}%`
