@@ -66,6 +66,7 @@ function start(app)
 	// REDIS SUBSCRIPTION
 	/////////////////////////////////////////////////////////////////////////////////////////
 	let client = redis.createClient(6379, 'localhost', {});
+	let client_kv = redis.createClient(6379, 'localhost', {});
 	// We subscribe to all the data being published by the server's metric agent.
 	for( var server of servers )
 	{
@@ -77,9 +78,9 @@ function start(app)
 	client.on("message", async function (channel, message) 
 	{
 		console.log(`Received message from agent: ${channel}`)
-		const cpu_threshold = await client.get('alert_cpu_threshold');
-		const memory_threshold = await client.get('alert_memory_threshold');
-		const email = await client.get('alert_email');
+		const cpu_threshold = await client_kv.get('alert_cpu_threshold');
+		const memory_threshold = await client_kv.get('alert_memory_threshold');
+		const email = await client_kv.get('alert_email');
 		for( var server of servers )
 		{
 			// Update our current snapshot for a server's metrics.
